@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <link rel="stylesheet" href="./index.css"> -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              clifford: "#da373d",
+            },
+          },
+        },
+      };
+    </script>
+    <title>Socket.IO chat</title>
+
+    <style>
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      #form {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 0.25rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        height: 3rem;
+        box-sizing: border-box;
+        backdrop-filter: blur(10px);
+      }
+      #input {
+        border: none;
+        padding: 0 1rem;
+        flex-grow: 1;
+        border-radius: 2rem;
+        margin: 0.25rem;
+      }
+      #input:focus {
+        outline: none;
+      }
+      #form > button {
+        background: #333;
+        border: none;
+        padding: 0 1rem;
+        margin: 0.25rem;
+        border-radius: 3px;
+        outline: none;
+        color: #fff;
+      }
+
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+      #messages > li {
+        padding: 0.5rem 1rem;
+      }
+      #messages > li:nth-child(odd) {
+        background: #efefef;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-slate-400"><%= locals.title %></div>
+
+    <div class="flex flex-col justify-center items-center">
+      <span class="text-bold capitalize"
+        ><strong>demo existing users:</strong> (uname, chanel)</span
+      >
+
+      <ul
+        class="py-2 border w-full flex flex-col gap-1 justify-center items-center"
+      >
+        <% users.forEach(function(user) { %>
+        <li class="text-start">
+          <button
+            onclick="clickHandle(`<%= user.uname %>`,`<%= user.groupName %>` )"
+            class="font-bold"
+          >
+            <%= user.uname %>
+          </button>
+          <span><span>[</span><%= user.groupName %><span>]</span></span>
+        </li>
+        <% }); %>
+      </ul>
+    </div>
+
+    <form class="flex gap-2 justify-center w-full border" id="form" action="">
+      <div>
+        <span class="font-bold">correct uname from above:</span>
+        <input
+          id="idsender"
+          type="text"
+          class="border px-1 text-center rounded-full"
+        />
+      </div>
+      <div>
+        <span class="font-bold">message:</span>
+        <input
+          id="idmsg"
+          autocomplete="off"
+          type="text"
+          class="border px-1 text-center rounded-full"
+        />
+        <button class="font-bold capitalize ms-2 border bg-slate-500 px-3">
+          Send
+        </button>
+      </div>
+    </form>
+
+    <div>
+      <ul id="idmsglist"></ul>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      const form = document.getElementById("form");
+      const input = document.getElementById("idmsg");
+      const messages = document.getElementById("idmsglist");
+      const sender = document.getElementById("idsender");
+
+      let msgBody = {
+        sender: "a renowned effer",
+        receiver: "a nube effer",
+      };
+      let msgProperties = {
+        visible: "public",
+        autoDelete: true,
+        durationBeforeDeletion: 5,
+        durationUnit: "minute",
+      };
+
+      function clickHandle(uname, groupName) {
+        document.getElementById("idsender").value = uname;
+        document.getElementById("idmsg").value = "i belong to " + groupName;
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        if (input.value && sender.value) {
+          // socket.join("frontend");
+          socket
+            .timeout(2000)
+            .emit(
+              "dev-talk",
+              { sender: sender.value, message: input.value },
+              (err, response) => {
+                if (err) {
+                  console.log(JSON.stringify(err));
+                } else {
+                  console.log(JSON.stringify(response));
+                }
+              }
+            );
+          input.value = "";
+        }
+        //
+      });
+
+      socket.on("dev-talk", (msg) => {
+        const item = document.createElement("li");
+        item.textContent = msg;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+    </script>
+  </body>
+</html>
