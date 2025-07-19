@@ -1,6 +1,6 @@
 
-./backend/node_modules
-./client/node_modules
+./b/node_modules
+./f/node_modules
+./b/.env
 
-client/node_modules
-backend/node_modules
+   
